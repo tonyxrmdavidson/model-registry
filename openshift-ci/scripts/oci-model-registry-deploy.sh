@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Define variables
-MODEL_REGISTRY_DEPLOY_MANIFEST="model-registry-operator-deploy.yaml"
-DSC_INITIALIZATION_MANIFEST="model-registry-DSCInitialization.yaml"
-DATA_SCIENCE_CLUSTER_MANIFEST="model-registry-data-science-cluster-nightly.yaml"
+MODEL_REGISTRY_CATALOGUE_SOURCE_CREATE="../resources/model-registry-catalogue-source.yaml"
+MODEL_REGISTRY_DEPLOY_MANIFEST="../resources/model-registry-operator-deploy.yaml"
+# DSC_INITIALIZATION_MANIFEST="../resources/model-registry-DSCInitialization.yaml"
+DATA_SCIENCE_CLUSTER_MANIFEST="../resources/model-registry-data-science-cluster-nightly.yaml"
 TIMEOUT=${DEPLOY_TIMEOUT:-300s}  # Default timeout is 300 seconds, can be overridden by setting DEPLOY_TIMEOUT environment variable
 
 # Function to deploy and wait for deployment
@@ -31,8 +32,9 @@ deploy_resource() {
 
 # Main function for orchestrating deployments
 main() {
+    deploy_resource $MODEL_REGISTRY_CATALOGUE_SOURCE_CREATE
     deploy_resource $MODEL_REGISTRY_DEPLOY_MANIFEST
-    deploy_resource $DSC_INITIALIZATION_MANIFEST
+    # deploy_resource $DSC_INITIALIZATION_MANIFEST
     deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
 }
 
