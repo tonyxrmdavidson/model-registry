@@ -1,0 +1,59 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  creationTimestamp: '2024-03-04T14:30:48Z'
+  generation: 2
+  managedFields:
+    - apiVersion: operators.coreos.com/v1alpha1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          .: {}
+          'f:displayName': {}
+          'f:image': {}
+          'f:publisher': {}
+          'f:sourceType': {}
+      manager: Mozilla
+      operation: Update
+      time: '2024-03-04T14:31:43Z'
+    - apiVersion: operators.coreos.com/v1alpha1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          .: {}
+          'f:connectionState':
+            .: {}
+            'f:address': {}
+            'f:lastConnect': {}
+            'f:lastObservedState': {}
+          'f:registryService':
+            .: {}
+            'f:createdAt': {}
+            'f:port': {}
+            'f:protocol': {}
+            'f:serviceName': {}
+            'f:serviceNamespace': {}
+      manager: catalog
+      operation: Update
+      subresource: status
+      time: '2024-03-04T14:32:43Z'
+  name: model-registry-test-source
+  namespace: openshift-marketplace
+  resourceVersion: '43149'
+  uid: 4cf22a77-8709-49d5-b048-17b95b4751e0
+spec:
+  displayName: ''
+  image: 'registry-proxy.engineering.redhat.com/rh-osbs/iib:682028'
+  publisher: ''
+  sourceType: grpc
+status:
+  connectionState:
+    address: 'model-registry-test-source.openshift-marketplace.svc:50051'
+    lastConnect: '2024-03-04T14:32:42Z'
+    lastObservedState: READY
+  registryService:
+    createdAt: '2024-03-04T14:31:43Z'
+    port: '50051'
+    protocol: grpc
+    serviceName: model-registry-test-source
+    serviceNamespace: openshift-marketplace
