@@ -1,11 +1,145 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: opendatahub-operator
+  creationTimestamp: '2024-03-04T14:34:44Z'
+  generation: 1
+  labels:
+    operators.coreos.com/rhods-operator.openshift-operators: ''
+  managedFields:
+    - apiVersion: operators.coreos.com/v1alpha1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:operators.coreos.com/rhods-operator.openshift-operators': {}
+      manager: Go-http-client
+      operation: Update
+      time: '2024-03-04T14:34:44Z'
+    - apiVersion: operators.coreos.com/v1alpha1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          .: {}
+          'f:channel': {}
+          'f:installPlanApproval': {}
+          'f:name': {}
+          'f:source': {}
+          'f:sourceNamespace': {}
+          'f:startingCSV': {}
+      manager: Mozilla
+      operation: Update
+      time: '2024-03-04T14:34:44Z'
+    - apiVersion: operators.coreos.com/v1alpha1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:installedCSV': {}
+          'f:currentCSV': {}
+          'f:catalogHealth': {}
+          'f:installPlanRef':
+            .: {}
+            'f:apiVersion': {}
+            'f:kind': {}
+            'f:name': {}
+            'f:namespace': {}
+            'f:resourceVersion': {}
+            'f:uid': {}
+          'f:installPlanGeneration': {}
+          'f:conditions': {}
+          .: {}
+          'f:installplan':
+            .: {}
+            'f:apiVersion': {}
+            'f:kind': {}
+            'f:name': {}
+            'f:uuid': {}
+          'f:lastUpdated': {}
+          'f:state': {}
+      manager: catalog
+      operation: Update
+      subresource: status
+      time: '2024-03-04T14:35:07Z'
+  name: rhods-operator
   namespace: openshift-operators
+  resourceVersion: '44087'
+  uid: a7d169f7-714c-449e-84c2-83e534871c41
 spec:
-  channel: fast
+  channel: odh-nightlies
   installPlanApproval: Automatic
-  name: opendatahub-operator
-  source: community-operators
+  name: rhods-operator
+  source: model-registry-test-source
   sourceNamespace: openshift-marketplace
+  startingCSV: opendatahub-operator.1.18.0
+status:
+  installplan:
+    apiVersion: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    name: install-fnfnv
+    uuid: b1900062-83f7-4a78-9fbc-6c7ab669a260
+  lastUpdated: '2024-03-04T14:35:06Z'
+  installedCSV: opendatahub-operator.1.18.0
+  currentCSV: opendatahub-operator.1.18.0
+  installPlanRef:
+    apiVersion: operators.coreos.com/v1alpha1
+    kind: InstallPlan
+    name: install-fnfnv
+    namespace: openshift-operators
+    resourceVersion: '43741'
+    uid: b1900062-83f7-4a78-9fbc-6c7ab669a260
+  state: AtLatestKnown
+  catalogHealth:
+    - catalogSourceRef:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        name: certified-operators
+        namespace: openshift-marketplace
+        resourceVersion: '43151'
+        uid: 18a800d0-f007-4af0-b119-0a4e47980c0d
+      healthy: true
+      lastUpdated: '2024-03-04T14:34:49Z'
+    - catalogSourceRef:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        name: community-operators
+        namespace: openshift-marketplace
+        resourceVersion: '43150'
+        uid: 3fa00b77-583f-456d-9ed2-5359f32c0419
+      healthy: true
+      lastUpdated: '2024-03-04T14:34:49Z'
+    - catalogSourceRef:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        name: model-registry-test-source
+        namespace: openshift-marketplace
+        resourceVersion: '43149'
+        uid: 4cf22a77-8709-49d5-b048-17b95b4751e0
+      healthy: true
+      lastUpdated: '2024-03-04T14:34:49Z'
+    - catalogSourceRef:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        name: redhat-marketplace
+        namespace: openshift-marketplace
+        resourceVersion: '43152'
+        uid: d1eac5ce-9eb6-451d-84cf-235b3c654dd9
+      healthy: true
+      lastUpdated: '2024-03-04T14:34:49Z'
+    - catalogSourceRef:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        name: redhat-operators
+        namespace: openshift-marketplace
+        resourceVersion: '43153'
+        uid: e9a2b697-1c3a-4b0e-a046-bd59f35b7515
+      healthy: true
+      lastUpdated: '2024-03-04T14:34:49Z'
+  conditions:
+    - lastTransitionTime: '2024-03-04T14:34:49Z'
+      message: all available catalogsources are healthy
+      reason: AllCatalogSourcesHealthy
+      status: 'False'
+      type: CatalogSourcesUnhealthy
+    - status: 'False'
+      type: BundleUnpacking
+  installPlanGeneration: 1
