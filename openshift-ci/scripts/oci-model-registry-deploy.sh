@@ -83,15 +83,16 @@ check_pod_status() {
     
     # Loop until timeout
     while (( $(date +%s) - start_time < timeout )); do
-        # Get the list of pods in the specified namespace matching the provided partial name
-        local pod_list=$(oc get pods -n "$namespace" --no-headers -o custom-columns=":metadata.name" | grep "$pod_name_partial")
-
+        # Get the list of pods in the specified namespace matching the provided partial names
+        local pod_list=$(oc get pods -n $namespace --no-headers -o custom-columns=NAME:.metadata.name | grep "$pod_name_partial")
+        
         # Iterate over each pod in the list
         while IFS= read -r pod_name; do
             # Get the pod info
             local pod_info=$(oc get pod "$pod_name" -n "$namespace" --no-headers)
-
+            echo $pod_info 
             # Extract pod status and ready status from the info
+            local pod_name=$(echo "$pod_info" | awk '{print $1}')
             local pod_status=$(echo "$pod_info" | awk '{print $3}')
             local pod_ready=$(echo "$pod_info" | awk '{print $2}')
             local ready_containers=$(echo "$pod_ready" | cut -d'/' -f1)
@@ -157,8 +158,8 @@ check_route_status() {
 run_deployment_tests() {
     check_deployment_availability default model-registry-db
     check_deployment_availability default modelregistry-sample
-    check_pod_status default model-registry 1
-    check_pod_status default modelregistry 2
+    check_pod_status default "model-registry-db" 1
+    check_pod_status default "modelregistry-sample" 2
     check_route_status "default" "modelregistry-sample-http"
 }
 
@@ -167,6 +168,7 @@ main() {
     deploy_and_wait $OPENDATAHUB_CATALOGUE_SOURCE_CREATE
     deploy_resource $OPENDATAHUB_DEPLOY_MANIFEST
     deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
+    check_pod_status "opendatahub" "model-registry-operator-controller-manager" 2
     clone_deploy_model_registry_operator_crd_files
     run_deployment_tests
 }
