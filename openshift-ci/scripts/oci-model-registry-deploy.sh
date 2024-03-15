@@ -90,7 +90,7 @@ check_pod_status() {
         while IFS= read -r pod_name; do
             # Get the pod info
             local pod_info=$(oc get pod "$pod_name" -n "$namespace" --no-headers)
-            echo $pod_info 
+
             # Extract pod status and ready status from the info
             local pod_name=$(echo "$pod_info" | awk '{print $1}')
             local pod_status=$(echo "$pod_info" | awk '{print $3}')
@@ -165,11 +165,11 @@ run_deployment_tests() {
 
 # Main function for orchestrating deployments
 main() {   
-    deploy_and_wait $OPENDATAHUB_CATALOGUE_SOURCE_CREATE
-    deploy_resource $OPENDATAHUB_DEPLOY_MANIFEST
-    deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
-    check_pod_status "opendatahub" "model-registry-operator-controller-manager" 2
-    clone_deploy_model_registry_operator_crd_files
+    # deploy_and_wait $OPENDATAHUB_CATALOGUE_SOURCE_CREATE
+    # deploy_resource $OPENDATAHUB_DEPLOY_MANIFEST
+    # deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
+    # check_pod_status "opendatahub" "model-registry-operator-controller-manager" 2
+    # clone_deploy_model_registry_operator_crd_files
     run_deployment_tests
 }
 
