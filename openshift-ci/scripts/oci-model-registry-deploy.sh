@@ -25,7 +25,6 @@ deploy_and_wait() {
 # Deploy resource and wait for readiness
 deploy_resource() {
     local manifest=$1
-    echo ""
     echo $manifest "deploying"
     deploy_and_wait $manifest
 }
