@@ -168,7 +168,7 @@ main() {
     # deploy_and_wait $OPENDATAHUB_CATALOGUE_SOURCE_CREATE
     # deploy_resource $OPENDATAHUB_DEPLOY_MANIFEST
     # deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
-    check_pod_status "opendatahub" "-l app.kubernetes.io/part-of=model-registry-operator" 2
+    check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2
     # clone_deploy_model_registry_operator_crd_files
     run_deployment_tests
 }
