@@ -76,7 +76,7 @@ check_deployment_availability() {
 
 check_pod_status() {
     local namespace="$1"
-    local pod_name_partial="$2"
+    local pod_selector="$2"
     local expected_ready_containers="$3"
     local timeout=300  # Timeout in seconds
     local start_time=$(date +%s)
@@ -84,7 +84,7 @@ check_pod_status() {
     # Loop until timeout
     while (( $(date +%s) - start_time < timeout )); do
         # Get the list of pods in the specified namespace matching the provided partial names
-        local pod_list=$(oc get pods -n $namespace --no-headers -o custom-columns=NAME:.metadata.name | grep "$pod_name_partial")
+        local pod_list=$(oc get pods -n $namespace $pod_selector --no-headers -o custom-columns=NAME:.metadata.name)
         
         # Iterate over each pod in the list
         while IFS= read -r pod_name; do
@@ -158,8 +158,8 @@ check_route_status() {
 run_deployment_tests() {
     check_deployment_availability default model-registry-db
     check_deployment_availability default modelregistry-sample
-    check_pod_status default "model-registry-db" 1
-    check_pod_status default "modelregistry-sample" 2
+    check_pod_status default "-l name=model-registry-db" 1
+    check_pod_status default "-l app=modelregistry-sample" 2
     check_route_status "default" "modelregistry-sample-http"
 }
 
@@ -168,7 +168,7 @@ main() {
     # deploy_and_wait $OPENDATAHUB_CATALOGUE_SOURCE_CREATE
     # deploy_resource $OPENDATAHUB_DEPLOY_MANIFEST
     # deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
-    # check_pod_status "opendatahub" "model-registry-operator-controller-manager" 2
+    check_pod_status "opendatahub" "-l app.kubernetes.io/part-of=model-registry-operator" 2
     # clone_deploy_model_registry_operator_crd_files
     run_deployment_tests
 }
