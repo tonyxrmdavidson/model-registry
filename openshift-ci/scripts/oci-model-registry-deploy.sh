@@ -92,12 +92,14 @@ check_deployment_availability() {
         # Check if the deployment is available
         if [[ $deployment_status != "" ]]; then
             echo "✔ Success: Deployment $deployment is available"
+            echo "✔ Success: Deployment $deployment is available"
             return 0  # Success
         fi
 
         sleep 5  # Wait for 5 seconds before checking again
     done
 
+    echo "X Fail: Timeout reached. Deployment $deployment did not become available within $timeout seconds"
     echo "X Fail: Timeout reached. Deployment $deployment did not become available within $timeout seconds"
     return 1  # Failure
 }
@@ -128,8 +130,10 @@ check_pod_status() {
             # Check if the pod is Running and all containers are ready
             if [[ $pod_status == "Running" ]] && [[ $ready_containers -eq $expected_ready_containers ]]; then
                 echo "✔ Success: Pod $pod_name is running and $ready_containers out of $expected_ready_containers containers are ready"
+                echo "✔ Success: Pod $pod_name is running and $ready_containers out of $expected_ready_containers containers are ready"
                 return 0  # Success
             else
+                echo "! Info: Pod $pod_name is not running or does not have $expected_ready_containers containers ready"
                 echo "! Info: Pod $pod_name is not running or does not have $expected_ready_containers containers ready"
             fi
         done <<< "$pod_list"
@@ -156,8 +160,10 @@ check_route_status() {
 
         if [[ -z "$route_url" ]]; then
              echo "X Fail: Route '$route_name' does not exist in namespace '$namespace'"
+             echo "X Fail: Route '$route_name' does not exist in namespace '$namespace'"
             return 1
         else 
+            echo "✔ Success: Route '$route_name' exists in namespace '$namespace'"
             echo "✔ Success: Route '$route_name' exists in namespace '$namespace'"
         fi
 
@@ -167,17 +173,21 @@ check_route_status() {
         # Check if the response status code is 200 OK or 404 Not Found
         if [[ "$response" == "200" ]]; then
             echo "✔ Success: Route server is reachable. Status code: 200 OK"
+            echo "✔ Success: Route server is reachable. Status code: 200 OK"
             return 0
         elif [[ "$response" == "404" ]]; then
             echo "✔ Success: Route server is reachable. Status code: 404 Not Found"
+            echo "✔ Success: Route server is reachable. Status code: 404 Not Found"
             return 0
         else
+            echo "X Fail: Route server is unreachable. Status code: $response"
             echo "X Fail: Route server is unreachable. Status code: $response"
         fi
 
         sleep "$interval"
     done
 
+    echo "X Fail: Timeout reached. Route '$route_name' did not become live within $timeout seconds."
     echo "X Fail: Timeout reached. Route '$route_name' did not become live within $timeout seconds."
     return 1
 }
