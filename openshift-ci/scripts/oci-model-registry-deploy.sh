@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # Define variables for ODH nightly deployment
-OPENDATAHUB_CATALOGUE_SOURCE_CREATE="../resources/opendatahub-catalogue-source.yaml"
-OPENDATAHUB_DEPLOY_MANIFEST="../resources/opendatahub-operator-deploy.yaml"
-DATA_SCIENCE_CLUSTER_MANIFEST="../resources/opendatahub-data-science-cluster.yaml"
+OPENDATAHUB_CATALOGUE_SOURCE_CREATE="openshift-ci/resources/opendatahub-catalogue-source.yaml"
+OPENDATAHUB_DEPLOY_MANIFEST="openshift-ci/resources/opendatahub-operator-deploy.yaml"
+DATA_SCIENCE_CLUSTER_MANIFEST="openshift-ci/resources/opendatahub-data-science-cluster.yaml"
 MODEL_REGISTRY_OPERATOR_GIT_URL="https://github.com/opendatahub-io/model-registry-operator.git"
-source colour_text_variables.sh
 
 # Function to deploy and wait for deployment
 deploy_and_wait() {
