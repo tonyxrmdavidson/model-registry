@@ -4,8 +4,37 @@
 OPENDATAHUB_CATALOGUE_SOURCE_CREATE="openshift-ci/resources/opendatahub-catalogue-source.yaml"
 OPENDATAHUB_DEPLOY_MANIFEST="openshift-ci/resources/opendatahub-operator-deploy.yaml"
 DATA_SCIENCE_CLUSTER_MANIFEST="openshift-ci/resources/opendatahub-data-science-cluster.yaml"
-MODEL_REGISTRY_OPERATOR_GIT_URL="https://github.com/opendatahub-io/model-registry-operator.git"
-source 
+MODEL_REGISTRY_OPERATOR_GIT_URL="https://github.com/opendatahub-io/model-registry-operator.git" 
+
+#To do,  This function works, however there is a delay the informaiton obtained in datagrepper and the operator image being available.
+#Function to retrieve the latest completed iib image odh-nightly
+retrieve_iib() {
+    local rhods_version=2.9
+    local delta=$((60 * 86400))
+
+    echo "Fetch latest completed IIB of odh-operator ${rhods_version} from Datagrepper"
+    
+    #Get the latest odh-nightly from datagrepper
+    curl --retry 30 --retry-delay 5 -o latest_iib.txt -Ls -k 'https://datagrepper.engineering.redhat.com/raw?topic=/topic/VirtualTopic.eng.ci.redhat-container-image.pipeline.complete&rows_per_page=25&delta='${delta}'&contains=odh-operator-bundle-container-v'${rhods_version}
+    iib_query='[.raw_messages[].msg | select( (.artifact.component | test("^cvp-")) and .pipeline.status=="complete") | {nvr: .artifact.nvr, index_image: .pipeline.index_image}] | .[0]'
+    iib=$(jq -r "${iib_query}" latest_iib.txt | jq -r '.index_image."v4.14"' | cut -d ':' -f 2-)
+    
+    if [[ $iib =~ ^[0-9]{6}$ ]]; then
+        echo "✔ Success: The latest IIB $iib has been retrieved." #Successfully retrieved the latest completed iib
+    else
+        echo "X Fail: The latest IIB has not been retrieved"
+        return 1 #Failed to get the iib
+    fi
+    
+    #Export the variable so it can be picked up with the yq env() function.
+    export iib_string="registry-proxy.engineering.redhat.com/rh-osbs/iib:$iib"
+
+    #Update the yaml file with the latest iib
+    yq eval '.spec.image = strenv(iib_string)' openshift-ci/resources/opendatahub-catalogue-source.yaml -i
+    
+    #Remove the latest_iib.txt file
+    rm latest_iib.txt
+}
 
 # Function to deploy and wait for deployment
 deploy_and_wait() {
@@ -17,7 +46,7 @@ deploy_and_wait() {
     if oc apply -f $manifest --wait=true --timeout=300s; then
         echo "Deployment of $resource_name succeeded."
     else
-        echo "Error: Deployment of $resource_name failed or timed out." >&2
+        echo "X Fail: Deployment of $resource_name failed or timed out." >&2
         return 1
     fi
 }
@@ -164,6 +193,7 @@ run_deployment_tests() {
 
 # Main function for orchestrating deployments
 main() {   
+    # retrieve_iib   # Function works, see comments at function
     deploy_and_wait $OPENDATAHUB_CATALOGUE_SOURCE_CREATE
     deploy_resource $OPENDATAHUB_DEPLOY_MANIFEST
     deploy_resource $DATA_SCIENCE_CLUSTER_MANIFEST
