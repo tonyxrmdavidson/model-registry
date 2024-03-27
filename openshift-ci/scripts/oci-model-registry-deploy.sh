@@ -158,9 +158,9 @@ run_deployment_tests() {
 # Main function for orchestrating deployments
 main() {   
     deploy_and_wait $OPENDATAHUB_SUBSCRIPTION
+    deploy_and_wait $DSC_INITIALIZATION_MANIFEST
     check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2
-    deploy_and_wait $DATA_SCIENCE_CLUSTER_MANIFEST
-    deploy_and_wait $DSC_INITIALIZATION_MANIFEST   
+    deploy_and_wait $DATA_SCIENCE_CLUSTER_MANIFEST  
     clone_deploy_model_registry_operator_crd_files
     run_deployment_tests
 }
