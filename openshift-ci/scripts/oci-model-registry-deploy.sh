@@ -2,6 +2,7 @@
 
 # Define variables for ODH deployment deployment
 OPENDATAHUB_SUBSCRIPTION="openshift-ci/resources/opendatahub-subscription.yaml"
+DSC_INITIALIZATION_MANIFEST="openshift-ci/resources/model-registry-DSCInitialization.yaml"
 DATA_SCIENCE_CLUSTER_MANIFEST="openshift-ci/resources/opendatahub-data-science-cluster.yaml"
 MODEL_REGISTRY_OPERATOR_GIT_URL="https://github.com/opendatahub-io/model-registry-operator.git"
 source "openshift-ci/scripts/colour_text_variables.sh"
@@ -158,7 +159,8 @@ run_deployment_tests() {
 main() {   
     deploy_and_wait $OPENDATAHUB_SUBSCRIPTION
     check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2
-    deploy_and_wait $DATA_SCIENCE_CLUSTER_MANIFEST   
+    deploy_and_wait $DATA_SCIENCE_CLUSTER_MANIFEST
+    deploy_and_wait $DSC_INITIALIZATION_MANIFEST   
     clone_deploy_model_registry_operator_crd_files
     run_deployment_tests
 }
