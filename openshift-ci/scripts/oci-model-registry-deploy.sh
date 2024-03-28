@@ -158,7 +158,6 @@ run_deployment_tests() {
 
 # Main function for orchestrating deployments
 main() {   
-    ./install_yq.sh
     deploy_and_wait $OPENDATAHUB_SUBSCRIPTION
     deploy_and_wait $DSC_INITIALIZATION_MANIFEST
     check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2
