@@ -145,7 +145,7 @@ main() {
     deploy_and_wait $OPENDATAHUB_SUBSCRIPTION 0
     deploy_and_wait $DSC_INITIALIZATION_MANIFEST 20
     check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2
-    deploy_and_wait $DATA_SCIENCE_CLUSTER_MANIFEST  
+    deploy_and_wait $DATA_SCIENCE_CLUSTER_MANIFEST 0
     deploy_and_wait $MODEL_REGISTRY_DB_MANIFEST 20
     deploy_and_wait $MODEL_REGISTRY_SAMPLE_MANIFEST 20
     run_deployment_tests
