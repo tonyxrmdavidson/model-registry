@@ -199,25 +199,25 @@ run_api_tests() {
 
 # Run the deployment tests.
 run_deployment_tests() {
-    # check_deployment_availability "opendatahub" model-registry-db
-    # check_deployment_availability "opendatahub" modelregistry-sample
-    # check_pod_status "opendatahub" "-l name=model-registry-db" 1
-    # check_pod_status "opendatahub" "-l app=modelregistry-sample" 2
+    check_deployment_availability "opendatahub" model-registry-db
+    check_deployment_availability "opendatahub" modelregistry-sample
+    check_pod_status "opendatahub" "-l name=model-registry-db" 1
+    check_pod_status "opendatahub" "-l app=modelregistry-sample" 2
     check_route_status "opendatahub" "modelregistry-sample-http"
 }
 
 # Main function for orchestrating deployments
 main() {   
-    # deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 0
-    # monitoring_crds_installation $OPENDATAHUB_CRDS 120
-    # deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
-    # deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
-    # monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
-    # check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2 
-    # deploy_and_wait "-n opendatahub" $MODEL_REGISTRY_SAMPLE_MANIFEST 20
-    # monitoring_crds_installation $MODEL_REGISTRY_CRDS 120
-    # deploy_and_wait "-n opendatahub" $MODEL_REGISTRY_DB_MANIFEST 20
-    # run_deployment_tests
+    deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 0
+    monitoring_crds_installation $OPENDATAHUB_CRDS 120
+    deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
+    deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
+    monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
+    check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2 
+    deploy_and_wait "-n opendatahub" $MODEL_REGISTRY_SAMPLE_MANIFEST 20
+    monitoring_crds_installation $MODEL_REGISTRY_CRDS 120
+    deploy_and_wait "-n opendatahub" $MODEL_REGISTRY_DB_MANIFEST 20
+    run_deployment_tests
     run_api_tests "-n opendatahub"
 }
 
