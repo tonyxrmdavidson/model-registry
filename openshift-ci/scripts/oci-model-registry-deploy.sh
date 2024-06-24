@@ -2,85 +2,14 @@
 
 # Define variables for ODH deployment deployment
 OPENDATAHUB_SUBSCRIPTION="openshift-ci/resources/opendatahub-subscription.yaml"
-ATHORINO_SUBSCRIPTION="openshift-ci/resources/model-registry-operator/authorino-subscription.yaml"
-SERVICE_MESH_SUBSCRIPTION="openshift-ci/resources/model-registry-operator/service-mesh-subscription.yaml"
 DSC_INITIALIZATION_MANIFEST="openshift-ci/resources/model-registry-DSCInitialization.yaml"
 DATA_SCIENCE_CLUSTER_MANIFEST="openshift-ci/resources/opendatahub-data-science-cluster.yaml"
-# MODEL_REGISTRY_DB_MANIFEST="openshift-ci/resources/model-registry-operator/mysql-db.yaml"
-MODEL_REGISTRY_SAMPLE_MANIFEST="openshift-ci/resources/samples/istio/mysql-tls"
+MODEL_REGISTRY_DB_MANIFEST="openshift-ci/resources/model-registry-operator/mysql-db.yaml"
+MODEL_REGISTRY_SAMPLE_MANIFEST="openshift-ci/resources/model-registry-operator/modelregistry_v1alpha1_modelregistry.yaml"
 OPENDATAHUB_CRDS="datascienceclusters.datasciencecluster.opendatahub.io,dscinitializations.dscinitialization.opendatahub.io,featuretrackers.features.opendatahub.io"
-AUTHORINO_CRDS="authconfigs.authorino.kuadrant.io,authconfigs.authorino.kuadrant.io,authorinos.operator.authorino.kuadrant.io"
-SERVICE_MESH_CRDS="servicemeshcontrolplanes.maistra.io,servicemeshmembers.maistra.io,servicemeshmemberrolls.maistra.io"
 DATA_SCIENCE_CLUSTER_CRDS="acceleratorprofiles.dashboard.opendatahub.io,datasciencepipelinesapplications.datasciencepipelinesapplications.opendatahub.io,odhapplications.dashboard.opendatahub.io,odhdashboardconfigs.opendatahub.io,odhdocuments.dashboard.opendatahub.io"
 MODEL_REGISTRY_CRDS="modelregistries.modelregistry.opendatahub.io"
-export DOMAIN=$(oc get ingresses.config/cluster -o jsonpath='{.spec.domain}')
-export TOKEN=$(oc whoami -t)
 source "openshift-ci/scripts/colour_text_variables.sh"
-
-# Function to update isto.env file with Domain
-create_istio_env() {
-    local file_path="openshift-ci/resources/samples/istio/components/istio.env"
-
-    cat <<EOF > "$file_path"
-AUTH_PROVIDER=opendatahub-auth-provider
-ISTIO_INGRESS=ingressgateway
-DOMAIN=$DOMAIN
-REST_CREDENTIAL_NAME=modelregistry-sample-rest-credential
-GRPC_CREDENTIAL_NAME=modelregistry-sample-grpc-credential
-EOF
-}
-
-# Function to deploy and set certs
-create_deploy_certs() {
-    source openshift-ci/scripts/generate_certs.sh "$DOMAIN"
-    
-    create_secret "istio-system" "generic" "modelregistry-sample-rest-credential" "modelregistry-sample-rest.domain"
-    create_secret "istio-system" "generic" "modelregistry-sample-grpc-credential" "modelregistry-sample-grpc.domain"
-    create_secret "" generic model-registry-db-credential model-registry-db
-}
-
-#Function to patch deployments
-patch_resource() {
-    oc patch smcp data-science-smcp -n istio-system --type='json' -p='[{"op": "replace", "path": "/spec/gateways/openshiftRoute/enabled", "value": true}]'
-}
-
-# Function to add namespace to the control plane
-add_namespace_to_istio_cp() {
-   oc apply -f -<<EOF
-apiVersion: maistra.io/v1
-kind: ServiceMeshMember
-metadata:
-  name: default
-spec:
-  controlPlaneRef:
-    name: data-science-smcp
-    namespace: istio-system
-EOF
-}
-
-# Function to create an openshift secret
-create_secret() {
-    local namespace=$1
-    local secret_type=$2
-    local secret_name=$3
-    local cert=$4
-
-    echo "$cert.domain.key"
-    echo "$cert.domain.crt"
-
-    # Create the secret
-    oc create secret -n "$namespace" "$secret_type" "$secret_name" \
-      "--from-file=tls.key=certs/$cert.key" \
-      "--from-file=tls.crt=certs/$cert.crt" \
-      "--from-file=ca.crt=certs/domain.crt"
-
-    # Check if the secret exists
-    if oc get secret "$secret_name" -n "$namespace" &> /dev/null; then
-        echo -e "${GREEN}✔ Success:${NC} Secret '$secret_name' created successfully in namespace '$namespace'."
-    else
-        echo -e "${RED}X Error:${NC} Failed to create secret '$secret_name' in namespace '$namespace'."
-    fi    
-}
 
 # Function to monitor CRDS creation and deployment.
 # The function takes two arguments, reference to manifest and a wait time in seconds.
@@ -142,13 +71,12 @@ deploy_and_wait() {
     local manifest=$2
     local resource_name=$(basename -s .yaml $manifest)
     local wait_time=$3
-    local apply_flag="${4:--f}"
-
+    
     sleep $wait_time
     
     echo "Deploying $resource_name from $manifest..."
 
-    if oc apply $apply_flag $manifest $namespace --wait=true --timeout=300s; then
+    if oc apply -f $manifest $namespace --wait=true --timeout=300s; then
         echo -e "${GREEN}✔ Success:${NC} Deployment of $resource_name succeeded."
     else
         echo -e "${RED}X Error:${NC} Deployment of $resource_name failed or timed out." >&2
@@ -186,7 +114,7 @@ check_pod_status() {
     local namespace="$1"
     local pod_selector="$2"
     local expected_ready_containers="$3"
-    local timeout=900  # Timeout in seconds
+    local timeout=300  # Timeout in seconds
     local start_time=$(date +%s)
     
     # Loop until timeout
@@ -244,8 +172,7 @@ check_route_status() {
         fi
 
         # Test if the route is live
-        local response=$(curl -v -H "Authorization: Bearer $TOKEN" --cacert certs/domain.crt -o /dev/null -s -w "%{http_code}" "https://modelregistry-sample-rest.$DOMAIN/api/model_registry/v1alpha3/registered_models")
-        # local response=$(curl -s -o /dev/null -w "%{http_code}" "$route_url/api/model_registry/v1alpha3/registered_models")
+        local response=$(curl -s -o /dev/null -w "%{http_code}" "$route_url/api/model_registry/v1alpha3/registered_models")
 
         # Check if the response status code is 200 OK or 404 Not Found
         if [[ "$response" == "200" ]]; then
@@ -267,44 +194,31 @@ check_route_status() {
 
 # Function to source the rest api tests and run them.
 run_api_tests() {
-    ./test/scripts/rest.sh "-n istio-system" "$TOKEN" ../certs/domain.crt
+    ./test/scripts/rest.sh "-n opendatahub"
 }
 
 # Run the deployment tests.
 run_deployment_tests() {
-    check_deployment_availability "odh-model-registries" model-registry-db
-    check_deployment_availability "odh-model-registries" modelregistry-sample
-    check_pod_status "odh-model-registries" "-l name=model-registry-db" 1
-    check_pod_status "odh-model-registries" "-l app=modelregistry-sample" 3
-    check_route_status "istio-system" "odh-model-registries-modelregistry-sample-rest"
-}
-
-# Function to clean certs
-clean_certs() {
-    rm -rf certs/
+    check_deployment_availability "opendatahub" model-registry-db
+    check_deployment_availability "opendatahub" modelregistry-sample
+    check_pod_status "opendatahub" "-l name=model-registry-db" 1
+    check_pod_status "opendatahub" "-l app=modelregistry-sample" 2
+    check_route_status "opendatahub" "modelregistry-sample-http"
 }
 
 # Main function for orchestrating deployments
 main() {   
-    create_istio_env
-    # deploy_and_wait "" $ATHORINO_SUBSCRIPTION 0
-    # monitoring_crds_installation $AUTHORINO_CRDS 120
-    # deploy_and_wait "" $SERVICE_MESH_SUBSCRIPTION 0
-    # monitoring_crds_installation $SERVICE_MESH_CRDS 120
-    # deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 0
-    # monitoring_crds_installation $OPENDATAHUB_CRDS 120
-    # deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
-    # deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
-    # monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
-    # check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2 
-    # add_namespace_to_istio_cp
-    # patch_resource
-    # create_deploy_certs
-    # deploy_and_wait "-n odh-model-registries" $MODEL_REGISTRY_SAMPLE_MANIFEST 20 "-k"
-    # monitoring_crds_installation $MODEL_REGISTRY_CRDS 120
-    # run_deployment_tests
-    run_api_tests "-n istio-system"
-    # clean_certs
+    deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 0
+    monitoring_crds_installation $OPENDATAHUB_CRDS 120
+    deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
+    deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
+    monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
+    check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2 
+    deploy_and_wait "-n opendatahub" $MODEL_REGISTRY_SAMPLE_MANIFEST 20
+    monitoring_crds_installation $MODEL_REGISTRY_CRDS 120
+    deploy_and_wait "-n opendatahub" $MODEL_REGISTRY_DB_MANIFEST 20
+    run_deployment_tests
+    run_api_tests "-n opendatahub"
 }
 
 # Execute main function
