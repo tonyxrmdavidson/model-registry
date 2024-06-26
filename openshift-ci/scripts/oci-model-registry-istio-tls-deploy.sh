@@ -273,7 +273,7 @@ check_route_status() {
 
 # Function to source the rest api tests and run them.
 run_api_tests() {
-    ./test/scripts/rest.sh "-n istio-system" "$TOKEN" ../certs/domain.crt
+    ./test/scripts/istio-tls-rest.sh "-n istio-system" "$TOKEN" ../certs/domain.crt
 }
 
 # Run the deployment tests.
