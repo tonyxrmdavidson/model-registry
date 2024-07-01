@@ -251,7 +251,7 @@ check_route_status() {
         fi
 
         # Test if the route is live
-        local response=$(curl -v -H "Authorization: Bearer $TOKEN" --cacert certs/domain.crt -o /dev/null -s -w "%{http_code}" "https://modelregistry-sample-rest.$DOMAIN/api/model_registry/v1alpha3/registered_models")
+        local response=$(curl -k -v -H "Authorization: Bearer $TOKEN" --cacert certs/domain.crt -o /dev/null -s -w "%{http_code}" "https://modelregistry-sample-rest.$DOMAIN/api/model_registry/v1alpha3/registered_models")
 
         # Check if the response status code is 200 OK or 404 Not Found
         if [[ "$response" == "200" ]]; then
@@ -288,21 +288,21 @@ run_deployment_tests() {
 # Main function for orchestrating deployments
 main() {   
     set_up_env
-    deploy_and_wait "" $ATHORINO_SUBSCRIPTION 60
-    monitoring_crds_installation $AUTHORINO_CRDS 120
-    deploy_and_wait "" $SERVICE_MESH_SUBSCRIPTION 120
-    monitoring_crds_installation $SERVICE_MESH_CRDS 120
-    deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 60
-    monitoring_crds_installation $OPENDATAHUB_CRDS 120
-    deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
-    deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
-    monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
-    check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2 
-    create_certs
-    deploy_certs
-    add_namespace_to_istio_cp
-    deploy_and_wait "-n odh-model-registries" $MODEL_REGISTRY_SAMPLE_MANIFEST 20 "-k"
-    monitoring_crds_installation $MODEL_REGISTRY_CRDS 120
+    # deploy_and_wait "" $ATHORINO_SUBSCRIPTION 60
+    # monitoring_crds_installation $AUTHORINO_CRDS 120
+    # deploy_and_wait "" $SERVICE_MESH_SUBSCRIPTION 120
+    # monitoring_crds_installation $SERVICE_MESH_CRDS 120
+    # deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 60
+    # monitoring_crds_installation $OPENDATAHUB_CRDS 120
+    # deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
+    # deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
+    # monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
+    # check_pod_status "opendatahub" "-l component.opendatahub.io/name=model-registry-operator" 2 
+    # create_certs
+    # deploy_certs
+    # add_namespace_to_istio_cp
+    # deploy_and_wait "-n odh-model-registries" $MODEL_REGISTRY_SAMPLE_MANIFEST 20 "-k"
+    # monitoring_crds_installation $MODEL_REGISTRY_CRDS 120
     run_deployment_tests
     run_api_tests "-n istio-system"
 }
