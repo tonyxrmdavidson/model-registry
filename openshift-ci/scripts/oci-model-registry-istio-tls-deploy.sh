@@ -294,6 +294,7 @@ main() {
     monitoring_crds_installation $SERVICE_MESH_CRDS 120
     deploy_and_wait "" $OPENDATAHUB_SUBSCRIPTION 60
     monitoring_crds_installation $OPENDATAHUB_CRDS 120
+    sleep 600
     deploy_and_wait "" $DSC_INITIALIZATION_MANIFEST 20 
     deploy_and_wait "" $DATA_SCIENCE_CLUSTER_MANIFEST 10 
     monitoring_crds_installation $DATA_SCIENCE_CLUSTER_CRDS 120
